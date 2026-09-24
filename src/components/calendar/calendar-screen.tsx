@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { EstimatedBadge } from "@/components/ui/badges";
 import { CalendarLegend, CycleCalendar } from "./cycle-calendar";
+import { buildHistoricalEstimates } from "@/lib/cycle/history-estimates";
 import { PeriodLogForm } from "@/components/cycle/period-log-form";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useRelationship } from "@/contexts/relationship-context";
@@ -46,6 +47,24 @@ export function CalendarScreen({ readOnly = false }: { readOnly?: boolean }) {
     (span) => selectedDate >= span.start && selectedDate <= span.end,
   );
   const selectedLog = logs.data?.find((log) => log.date === selectedDate);
+  const historicalEstimates = useMemo(
+    () =>
+      buildHistoricalEstimates(
+        cycle.data?.spans.map((span) => span.start) ?? [],
+        cycle.data?.prediction?.averageCycleLength,
+      ),
+    [cycle.data],
+  );
+  const historicalEstimate = historicalEstimates.find(
+    (estimate) =>
+      selectedDate >= estimate.cycleStart && selectedDate <= estimate.cycleEnd,
+  );
+  const latestStart = cycle.data?.spans.at(-1)?.start;
+  const selectedEstimate =
+    historicalEstimate ??
+    (latestStart && selectedDate >= latestStart
+      ? cycle.data?.prediction
+      : null);
 
   const refreshAll = async () => {
     await cycle.refresh();
@@ -80,6 +99,7 @@ export function CalendarScreen({ readOnly = false }: { readOnly?: boolean }) {
               periodDates={periodDates}
               loggedDates={loggedDates}
               prediction={cycle.data?.prediction ?? null}
+              historicalEstimates={historicalEstimates}
               selectedDate={selectedDate}
               onSelect={setSelectedDate}
             />
@@ -133,24 +153,32 @@ export function CalendarScreen({ readOnly = false }: { readOnly?: boolean }) {
               </div>
             </section>
 
-            {cycle.data?.prediction ? (
+            {selectedEstimate ? (
               <section className="card p-5">
                 <div className="mb-2 flex items-center justify-between gap-3">
-                  <h2 className="text-base font-semibold">
-                    {CYCLE.estimatesTitle}
-                  </h2>
+                  <h2 className="text-base font-semibold">Cycle estimates</h2>
                   <EstimatedBadge />
                 </div>
                 <dl className="space-y-2 text-sm">
+                  {"predictedNextPeriod" in selectedEstimate && (
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-[var(--color-muted)]">
+                        {CYCLE.nextPeriodLabel}
+                      </dt>
+                      <dd>
+                        {formatRange(
+                          selectedEstimate.predictedNextPeriod.start,
+                          selectedEstimate.predictedNextPeriod.end,
+                        )}
+                      </dd>
+                    </div>
+                  )}
                   <div className="flex justify-between gap-3">
                     <dt className="text-[var(--color-muted)]">
-                      {CYCLE.nextPeriodLabel}
+                      {CALENDAR.legend.ovulation}
                     </dt>
-                    <dd>
-                      {formatRange(
-                        cycle.data.prediction.predictedNextPeriod.start,
-                        cycle.data.prediction.predictedNextPeriod.end,
-                      )}
+                    <dd className="text-right">
+                      {formatFriendlyDate(selectedEstimate.predictedOvulation)}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-3">
@@ -159,8 +187,8 @@ export function CalendarScreen({ readOnly = false }: { readOnly?: boolean }) {
                     </dt>
                     <dd>
                       {formatRange(
-                        cycle.data.prediction.fertileWindow.start,
-                        cycle.data.prediction.fertileWindow.end,
+                        selectedEstimate.fertileWindow.start,
+                        selectedEstimate.fertileWindow.end,
                       )}
                     </dd>
                   </div>

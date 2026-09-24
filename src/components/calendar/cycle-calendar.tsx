@@ -13,10 +13,16 @@ import {
 import { enUS as enLocale } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { isWithinRange } from "@/lib/cycle/prediction";
-import { fromDateKey, toDateKey, todayKey, type DateKey } from "@/lib/utils/date";
+import {
+  fromDateKey,
+  toDateKey,
+  todayKey,
+  type DateKey,
+} from "@/lib/utils/date";
 import { cn } from "@/lib/utils/cn";
 import { CALENDAR } from "@/lib/copy";
 import type { CyclePrediction } from "@/types/cycle";
+import type { HistoricalCycleEstimate } from "@/lib/cycle/history-estimates";
 
 export type DayMarker =
   | "period"
@@ -28,6 +34,7 @@ export type DayMarker =
 export interface CalendarDayInfo {
   marker: DayMarker;
   hasLog: boolean;
+  hasOvulation: boolean;
 }
 
 const MARKER_STYLES: Record<DayMarker, string> = {
@@ -53,26 +60,36 @@ export function buildDayInfo(
   periodDates: Set<DateKey>,
   loggedDates: Set<DateKey>,
   prediction: CyclePrediction | null,
+  historicalEstimates: HistoricalCycleEstimate[] = [],
 ): CalendarDayInfo {
   const hasLog = loggedDates.has(date);
+  const estimates = [
+    ...historicalEstimates,
+    ...(prediction ? [prediction] : []),
+  ];
+  const hasOvulation = estimates.some(
+    (estimate) => estimate.predictedOvulation === date,
+  );
 
-  if (periodDates.has(date)) return { marker: "period", hasLog };
+  if (periodDates.has(date)) return { marker: "period", hasLog, hasOvulation };
+  if (hasOvulation) return { marker: "ovulation", hasLog, hasOvulation };
 
   if (prediction) {
     if (isWithinRange(date, prediction.predictedNextPeriod)) {
-      return { marker: "predicted-period", hasLog };
+      return { marker: "predicted-period", hasLog, hasOvulation };
     }
-    if (date === prediction.predictedOvulation) return { marker: "ovulation", hasLog };
-    if (isWithinRange(date, prediction.fertileWindow)) return { marker: "fertile", hasLog };
   }
+  if (estimates.some((estimate) => isWithinRange(date, estimate.fertileWindow)))
+    return { marker: "fertile", hasLog, hasOvulation };
 
-  return { marker: "none", hasLog };
+  return { marker: "none", hasLog, hasOvulation };
 }
 
 interface CycleCalendarProps {
   periodDates: Set<DateKey>;
   loggedDates: Set<DateKey>;
   prediction: CyclePrediction | null;
+  historicalEstimates?: HistoricalCycleEstimate[];
   selectedDate: DateKey;
   onSelect: (date: DateKey) => void;
 }
@@ -81,10 +98,13 @@ export function CycleCalendar({
   periodDates,
   loggedDates,
   prediction,
+  historicalEstimates = [],
   selectedDate,
   onSelect,
 }: CycleCalendarProps) {
-  const [month, setMonth] = useState(() => startOfMonth(fromDateKey(selectedDate)));
+  const [month, setMonth] = useState(() =>
+    startOfMonth(fromDateKey(selectedDate)),
+  );
   const today = todayKey();
 
   const days = useMemo(() => {
@@ -120,11 +140,13 @@ export function CycleCalendar({
       </div>
 
       <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-[var(--color-muted)]">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((label, index) => (
-          <span key={`${label}-${index}`} aria-hidden>
-            {label}
-          </span>
-        ))}
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+          (label, index) => (
+            <span key={`${label}-${index}`} aria-hidden>
+              {label}
+            </span>
+          ),
+        )}
       </div>
 
       <div className="mt-1 grid grid-cols-7 gap-1">
@@ -134,12 +156,21 @@ export function CycleCalendar({
 
         {days.cells.map((day) => {
           const key = toDateKey(day);
-          const info = buildDayInfo(key, periodDates, loggedDates, prediction);
+          const info = buildDayInfo(
+            key,
+            periodDates,
+            loggedDates,
+            prediction,
+            historicalEstimates,
+          );
           const isToday = key === today;
           const isSelected = key === selectedDate;
           const label = [
             format(day, "EEEE d MMMM yyyy", { locale: enLocale }),
             MARKER_LABELS[info.marker],
+            info.hasOvulation && info.marker !== "ovulation"
+              ? MARKER_LABELS.ovulation
+              : "",
             info.hasLog ? "check-in logged" : "",
             isToday ? "today" : "",
           ]
@@ -159,11 +190,19 @@ export function CycleCalendar({
                 MARKER_STYLES[info.marker],
                 !isSameMonth(day, month) && "opacity-40",
                 isSelected && "ring-2 ring-[var(--color-primary-deep)]",
-                isToday && !isSelected && "font-semibold underline underline-offset-4",
+                isToday &&
+                  !isSelected &&
+                  "font-semibold underline underline-offset-4",
                 info.marker === "none" && "hover:bg-[var(--color-cream)]",
               )}
             >
               {format(day, "d")}
+              {info.hasOvulation && info.marker !== "ovulation" ? (
+                <span
+                  aria-hidden
+                  className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[var(--color-ovulation)] ring-1 ring-white"
+                />
+              ) : null}
               {info.hasLog ? (
                 <span
                   aria-hidden
@@ -190,12 +229,18 @@ export function CalendarLegend() {
     <ul className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-[var(--color-muted)]">
       {items.map((item) => (
         <li key={item.marker} className="flex items-center gap-1.5">
-          <span className={cn("h-3 w-3 rounded-full", MARKER_STYLES[item.marker])} aria-hidden />
+          <span
+            className={cn("h-3 w-3 rounded-full", MARKER_STYLES[item.marker])}
+            aria-hidden
+          />
           {item.label}
         </li>
       ))}
       <li className="flex items-center gap-1.5">
-        <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary-deep)]" aria-hidden />
+        <span
+          className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary-deep)]"
+          aria-hidden
+        />
         {CALENDAR.legend.logged}
       </li>
     </ul>

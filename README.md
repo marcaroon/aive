@@ -73,6 +73,11 @@ Do not use the same link key for both people.
   remain inaccessible. The old sharing routes redirect to the shared Us page.
 - The shared view refreshes every 15 seconds while visible and on window focus.
   Editing forms do not poll over unsaved changes.
+- Both calendars retain estimated ovulation and fertile windows for earlier
+  recorded cycles. Select a date to see that cycle's estimate. Completed cycles
+  use their recorded length with the same estimate formula as the current cycle;
+  missing or implausible gaps use the average. Dates before the first record are
+  left unmarked. These estimates are recalculated when period records change.
 - Existing Firestore rules remain closed to unauthenticated browser access.
   Firebase Admin runs on the server; it does not require opening those rules.
 - No test messages or health records should be written to the real pair for QA.
