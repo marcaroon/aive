@@ -1,0 +1,191 @@
+rules_version = '2';
+
+// Aivé Firestore Security Rules
+//
+// The rules — not the UI — are what actually protect Aivel's health data.
+// Guiding principles:
+//   1. A user reads and writes only their own documents.
+//   2. Raw health data (dailyLogs, periodDays, cycles) is readable ONLY by its owner.
+//      A partner can never read these collections, under any permission setting.
+//   3. A partner sees exactly one document: sharedSummaries/{relationshipId},
+//      which the primary user writes and which contains only permitted fields.
+//   4. Pairing requires a valid, unexpired, unused invitation.
+//   5. A revoked relationship grants nothing.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isUser(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function relationship(relationshipId) {
+      return get(/databases/$(database)/documents/relationships/$(relationshipId)).data;
+    }
+
+    function relationshipExists(relationshipId) {
+      return exists(/databases/$(database)/documents/relationships/$(relationshipId));
+    }
+
+    function isActiveMember(relationshipId) {
+      return relationshipExists(relationshipId)
+        && relationship(relationshipId).status == 'active'
+        && (request.auth.uid == relationship(relationshipId).primaryUserId
+            || request.auth.uid == relationship(relationshipId).partnerUserId);
+    }
+
+    function isActivePrimary(relationshipId) {
+      return relationshipExists(relationshipId)
+        && relationship(relationshipId).status == 'active'
+        && request.auth.uid == relationship(relationshipId).primaryUserId;
+    }
+
+    function isActivePartner(relationshipId) {
+      return relationshipExists(relationshipId)
+        && relationship(relationshipId).status == 'active'
+        && request.auth.uid == relationship(relationshipId).partnerUserId;
+    }
+
+    // ---------- users ----------
+
+    match /users/{userId} {
+      // A user reads only their own profile. There is no directory of users.
+      allow read: if isUser(userId);
+      allow create: if isUser(userId)
+                    && request.resource.data.id == userId
+                    && request.resource.data.role in ['primary', 'partner'];
+      // The role is fixed at sign-up so nobody can promote themselves.
+      allow update: if isUser(userId)
+                    && request.resource.data.role == resource.data.role;
+      allow delete: if isUser(userId);
+    }
+
+    match /primaryProfiles/{userId} {
+      allow read, write: if isUser(userId);
+    }
+
+    // ---------- raw health data: owner only, never the partner ----------
+
+    match /users/{userId}/cycles/{cycleId} {
+      allow read, write: if isUser(userId);
+    }
+
+    match /users/{userId}/periodDays/{periodDayId} {
+      allow read, write: if isUser(userId);
+    }
+
+    match /users/{userId}/dailyLogs/{date} {
+      allow read, write: if isUser(userId);
+    }
+
+    match /users/{userId}/reminders/{reminderId} {
+      allow read, write: if isUser(userId);
+    }
+
+    // ---------- pairing invitations ----------
+
+    // The document id IS the code, so a partner looks it up with a direct get().
+    // Listing is scoped to the owner's own invitations only, so nobody can
+    // enumerate other people's live codes.
+    match /partnerInvitations/{code} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn() && resource.data.primaryUserId == request.auth.uid;
+
+      allow create: if isSignedIn()
+                    && request.resource.data.primaryUserId == request.auth.uid
+                    && request.resource.data.status == 'active'
+                    && request.resource.data.code == code
+                    && request.resource.data.expiresAt > request.time;
+
+      // The owner may cancel it; the redeemer may mark it used exactly once,
+      // and only while it is still active and unexpired.
+      allow update: if isSignedIn() && (
+        (resource.data.primaryUserId == request.auth.uid
+          && request.resource.data.status in ['revoked', 'expired'])
+        ||
+        (resource.data.status == 'active'
+          && resource.data.expiresAt > request.time
+          && resource.data.primaryUserId != request.auth.uid
+          && request.resource.data.status == 'used'
+          && request.resource.data.usedBy == request.auth.uid)
+      );
+
+      allow delete: if isSignedIn() && resource.data.primaryUserId == request.auth.uid;
+    }
+
+    // ---------- relationships ----------
+
+    match /relationships/{relationshipId} {
+      allow read: if isSignedIn()
+                  && (request.auth.uid == resource.data.primaryUserId
+                      || request.auth.uid == resource.data.partnerUserId);
+
+      // Only the joining partner creates it, and only against an invitation that
+      // is currently active, unexpired, and belongs to the named primary user.
+      allow create: if isSignedIn()
+                    && request.resource.data.partnerUserId == request.auth.uid
+                    && request.resource.data.status == 'active'
+                    && exists(/databases/$(database)/documents/partnerInvitations/$(request.resource.data.inviteCode))
+                    && get(/databases/$(database)/documents/partnerInvitations/$(request.resource.data.inviteCode)).data.status == 'active'
+                    && get(/databases/$(database)/documents/partnerInvitations/$(request.resource.data.inviteCode)).data.expiresAt > request.time
+                    && get(/databases/$(database)/documents/partnerInvitations/$(request.resource.data.inviteCode)).data.primaryUserId == request.resource.data.primaryUserId
+                    && request.resource.data.primaryUserId != request.auth.uid;
+
+      // Only the primary user can change status — that is, revoke access.
+      allow update: if isSignedIn()
+                    && request.auth.uid == resource.data.primaryUserId
+                    && request.resource.data.primaryUserId == resource.data.primaryUserId
+                    && request.resource.data.partnerUserId == resource.data.partnerUserId;
+
+      allow delete: if false;
+
+      // Permissions are authored by the primary user alone.
+      // The partner may read them so the UI can explain what is shared.
+      match /permissions/{document} {
+        allow read: if isActiveMember(relationshipId);
+        allow write: if isActivePrimary(relationshipId);
+      }
+
+      // Support requests: the primary user sends them, the partner responds.
+      match /supportRequests/{requestId} {
+        allow read: if isActiveMember(relationshipId);
+        allow create: if isActivePrimary(relationshipId);
+        allow update: if isActiveMember(relationshipId);
+        allow delete: if isActivePrimary(relationshipId);
+      }
+
+      // Love notes: either side may write one and update read state or reactions.
+      match /loveNotes/{noteId} {
+        allow read: if isActiveMember(relationshipId);
+        allow create: if isActiveMember(relationshipId)
+                      && request.resource.data.authorId == request.auth.uid
+                      && request.resource.data.message is string
+                      && request.resource.data.message.size() <= 280;
+        allow update: if isActiveMember(relationshipId);
+        allow delete: if false;
+      }
+    }
+
+    // ---------- shared summary: the partner's only window ----------
+
+    match /sharedSummaries/{relationshipId} {
+      // Readable by both sides of an active relationship. A revoked relationship
+      // fails isActiveMember, so access stops the instant it is revoked.
+      allow read: if isActiveMember(relationshipId);
+
+      // Only the primary user writes it, and only for their own relationship.
+      allow write: if isActivePrimary(relationshipId);
+    }
+
+    // Anything not matched above is denied.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

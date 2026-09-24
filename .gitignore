@@ -1,0 +1,24 @@
+node_modules/
+.next/
+out/
+build/
+.DS_Store
+*.pem
+
+# env
+.env
+.env.local
+.env*.local
+
+# vercel / typescript
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+
+# firebase
+.firebase/
+firebase-debug.log
+serviceAccountKey.json
+
+# Personal access links
+PRIVATE_LINKS.local.md
