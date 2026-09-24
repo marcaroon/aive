@@ -2,11 +2,7 @@
 
 import { AUTH_ENABLED } from "@/lib/config";
 import { useRouter } from "next/navigation";
-import {
-  Bell,
-  LogOut,
-  User,
-} from "lucide-react";
+import { Bell, LogOut, User } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
 import { PageContainer, SectionHeader } from "@/components/ui/card";
 import { SettingsList } from "./settings-list";
@@ -26,7 +22,9 @@ export function PrimarySettingsScreen() {
         <div className="space-y-6">
           <section className="card p-5">
             <p className="text-sm font-medium">{profile?.preferredName}</p>
-            <p className="text-xs text-[var(--color-muted)]">{profile?.email}</p>
+            <p className="text-xs text-[var(--color-muted)]">
+              {profile?.email}
+            </p>
           </section>
 
           <section>
@@ -49,20 +47,22 @@ export function PrimarySettingsScreen() {
             />
           </section>
 
-          {AUTH_ENABLED && <section>
-            <SettingsList
-              items={[
-                {
-                  label: SETTINGS.signOut,
-                  icon: LogOut,
-                  destructive: true,
-                  onClick: () => {
-                    void signOut().then(() => router.replace("/login"));
+          {AUTH_ENABLED && (
+            <section>
+              <SettingsList
+                items={[
+                  {
+                    label: SETTINGS.signOut,
+                    icon: LogOut,
+                    destructive: true,
+                    onClick: () => {
+                      void signOut().then(() => router.replace("/login"));
+                    },
                   },
-                },
-              ]}
-            />
-          </section>}
+                ]}
+              />
+            </section>
+          )}
 
           <p className="text-xs leading-relaxed text-[var(--color-muted)]">
             {MEDICAL_DISCLAIMER}

@@ -65,7 +65,9 @@ export function PartnerSettingsScreen() {
       await savePreferences(user.uid, { enabled: true, partnerActivity: true });
       setMessage(REMINDERS.allowed);
     } else {
-      setError("Notifications aren't allowed. You can change this in your browser settings.");
+      setError(
+        "Notifications aren't allowed. You can change this in your browser settings.",
+      );
     }
   };
 
@@ -108,9 +110,13 @@ export function PartnerSettingsScreen() {
                   <p className="mt-0.5 text-xs text-[var(--color-muted)]">
                     {relationship.pairedAt
                       ? SHARING.pairedOn(
-                          format(relationship.pairedAt.toDate(), "d MMMM yyyy", {
-                            locale: enLocale,
-                          }),
+                          format(
+                            relationship.pairedAt.toDate(),
+                            "d MMMM yyyy",
+                            {
+                              locale: enLocale,
+                            },
+                          ),
                         )
                       : ""}
                   </p>
@@ -138,14 +144,18 @@ export function PartnerSettingsScreen() {
                   icon: Bell,
                   onClick: () => void enableNotifications(),
                 },
-                ...(AUTH_ENABLED ? [{
-                  label: SETTINGS.signOut,
-                  icon: LogOut,
-                  destructive: true,
-                  onClick: () => {
-                    void signOut().then(() => router.replace("/login"));
-                  },
-                }] : []),
+                ...(AUTH_ENABLED
+                  ? [
+                      {
+                        label: SETTINGS.signOut,
+                        icon: LogOut,
+                        destructive: true,
+                        onClick: () => {
+                          void signOut().then(() => router.replace("/login"));
+                        },
+                      },
+                    ]
+                  : []),
               ]}
             />
           </section>
