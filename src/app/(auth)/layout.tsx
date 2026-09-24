@@ -10,14 +10,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       </Link>
       <div className="mt-10 flex-1">{children}</div>
       <p className="mt-8 text-center text-xs text-[var(--color-muted)]">
-        <Link href="/privacy" className="underline underline-offset-2">
-          Privacy
-        </Link>
-        {" · "}
-        <Link href="/terms" className="underline underline-offset-2">
-          Terms
-        </Link>
-      </p>
+         <Link href="/terms" className="underline underline-offset-2">
+           Terms
+         </Link>
+       </p>
     </main>
   );
 }

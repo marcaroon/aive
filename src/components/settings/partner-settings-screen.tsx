@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { format } from "date-fns";
 import { enUS as enLocale } from "date-fns/locale";
-import { Bell, FileText, LogOut } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
 import { PageContainer, SectionHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -138,7 +138,6 @@ export function PartnerSettingsScreen() {
                   icon: Bell,
                   onClick: () => void enableNotifications(),
                 },
-                { href: "/privacy", label: SETTINGS.privacyPolicy, icon: FileText },
                 ...(AUTH_ENABLED ? [{
                   label: SETTINGS.signOut,
                   icon: LogOut,

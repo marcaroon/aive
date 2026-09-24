@@ -4,11 +4,7 @@ import { AUTH_ENABLED } from "@/lib/config";
 import { useRouter } from "next/navigation";
 import {
   Bell,
-  Download,
-  FileText,
-  HeartHandshake,
   LogOut,
-  Shield,
   User,
 } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
@@ -48,37 +44,6 @@ export function PrimarySettingsScreen() {
                   label: SETTINGS.reminders,
                   description: SETTINGS.remindersBody,
                   icon: Bell,
-                },
-                {
-                  href: "/app/partner",
-                  label: SETTINGS.sharing,
-                  description: SETTINGS.sharingBody,
-                  icon: HeartHandshake,
-                },
-              ]}
-            />
-          </section>
-
-          <section>
-            <SectionHeader title={SETTINGS.privacySection} />
-            <SettingsList
-              items={[
-                {
-                  href: "/app/settings/privacy",
-                  label: SETTINGS.privacySettings,
-                  description: SETTINGS.privacySettingsBody,
-                  icon: Shield,
-                },
-                {
-                  href: "/app/settings/privacy#export",
-                  label: SETTINGS.exportData,
-                  description: SETTINGS.exportDataBody,
-                  icon: Download,
-                },
-                {
-                  href: "/privacy",
-                  label: SETTINGS.privacyPolicy,
-                  icon: FileText,
                 },
               ]}
             />

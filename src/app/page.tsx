@@ -32,9 +32,6 @@ export default function LandingPage() {
           {MEDICAL_DISCLAIMER}
         </p>
         <nav className="mt-3 flex gap-4 text-xs text-[var(--color-muted)]">
-          <Link href="/privacy" className="underline underline-offset-2">
-            Privacy
-          </Link>
           <Link href="/terms" className="underline underline-offset-2">
             Terms
           </Link>
