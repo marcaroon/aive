@@ -20,7 +20,7 @@ npm run private-links -- http://localhost:3000
 ```
 
 Open `PRIVATE_LINKS.local.md` locally and use the correct link on each device.
-Aivel's link opens her tracker; Ammar's opens his shared view. The browser remembers
+Aivel's link opens her tracker; Ammar's opens the full companion view. The browser remembers
 access for 180 days. Clearing browser cookies requires reopening the original link.
 Browser and installed-PWA storage can differ, so open the link in the browser used
 to install the PWA. Keep both links private; each is an access credential.
@@ -65,9 +65,12 @@ Do not use the same link key for both people.
 - API operations validate the signed role, user ID, relationship, and input on the
   server. Requests without private access are rejected. Cross-origin writes are
   rejected. API responses are not cached.
-- Ammar cannot request Aivel's raw health records. His summary is generated on the
-  server from the current sharing permissions. Notes and support requests stay
-  within the configured pair.
+- Ammar can view Aivel's complete health history, daily check-ins (including all
+  moods, sleep notes, and personal notes), calendar, insights, profile, and reminders.
+  No field-sharing switches are used in private-link mode, even if old permission
+  documents contain disabled flags. Aivel manages health records; Ammar's health
+  view is read-only. Both can send notes and use support requests. Other profiles
+  remain inaccessible. The old sharing routes redirect to the shared Us page.
 - The shared view refreshes every 15 seconds while visible and on window focus.
   Editing forms do not poll over unsaved changes.
 - Existing Firestore rules remain closed to unauthenticated browser access.
@@ -82,7 +85,9 @@ Do not use the same link key for both people.
 Set `NEXT_PUBLIC_AUTH_ENABLED=true` and rebuild/redeploy. Fill the six
 `NEXT_PUBLIC_FIREBASE_*` values, enable Firebase Email/Password auth, and keep the
 Firestore rules deployed. Private-link APIs are disabled in this mode. The original
-login, password reset, role guards, onboarding, and sign-out flows return.
+login, password reset, role guards, onboarding, and sign-out flows return, along
+with the original partner summary and Firestore permission model. The full
+companion view described above belongs to private-link mode.
 Registration stays hidden unless `NEXT_PUBLIC_ALLOW_REGISTRATION=true` is also set.
 No health-data migration is needed when using the same user IDs.
 

@@ -18,7 +18,12 @@ import {
 } from "@/lib/cycle/prediction";
 import { formatRange } from "@/lib/utils/date";
 import { CYCLE, INSIGHTS, STATES } from "@/lib/copy";
-import { MOOD_LABELS, SYMPTOM_LABELS, type Mood, type Symptom } from "@/types/daily-log";
+import {
+  MOOD_LABELS,
+  SYMPTOM_LABELS,
+  type Mood,
+  type Symptom,
+} from "@/types/daily-log";
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
@@ -29,7 +34,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function InsightsScreen() {
+export function InsightsScreen({ basePath = "/app" }: { basePath?: string }) {
   const cycle = useCycle();
   const logs = useRecentLogs(180);
 
@@ -41,7 +46,9 @@ export function InsightsScreen() {
   const sentences = insights ? buildInsightSentences(insights) : [];
   const loading = cycle.loading || logs.loading;
   const error = cycle.error || logs.error;
-  const hasData = Boolean(insights && cycle.data && cycle.data.spans.length > 0);
+  const hasData = Boolean(
+    insights && cycle.data && cycle.data.spans.length > 0,
+  );
 
   return (
     <>
@@ -72,7 +79,7 @@ export function InsightsScreen() {
             title={STATES.noInsightsTitle}
             description={STATES.noInsightsBody}
             action={
-              <Link href="/app/calendar">
+              <Link href={`${basePath}/calendar`}>
                 <Button size="sm">{CYCLE.openCalendar}</Button>
               </Link>
             }
@@ -108,14 +115,20 @@ export function InsightsScreen() {
               />
               <StatCard
                 label={INSIGHTS.avgPain}
-                value={insights.averagePain !== null ? `${insights.averagePain} / 10` : "—"}
+                value={
+                  insights.averagePain !== null
+                    ? `${insights.averagePain} / 10`
+                    : "—"
+                }
               />
             </div>
 
             {cycle.data?.prediction ? (
               <section className="card p-5">
                 <div className="mb-1 flex items-center justify-between gap-3">
-                  <h2 className="text-base font-semibold">{INSIGHTS.predictedTitle}</h2>
+                  <h2 className="text-base font-semibold">
+                    {INSIGHTS.predictedTitle}
+                  </h2>
                   <EstimatedBadge />
                 </div>
                 <p className="text-lg font-medium">
@@ -135,7 +148,10 @@ export function InsightsScreen() {
                 <SectionHeader title={INSIGHTS.noticeTitle} />
                 <ul className="space-y-2">
                   {sentences.map((sentence) => (
-                    <li key={sentence} className="card p-4 text-sm leading-relaxed">
+                    <li
+                      key={sentence}
+                      className="card p-4 text-sm leading-relaxed"
+                    >
                       {sentence}
                     </li>
                   ))}
@@ -147,7 +163,9 @@ export function InsightsScreen() {
               <CycleLengthChart data={insights.cycleLengthHistory} />
             ) : null}
 
-            {insights.painTrend.length > 1 ? <PainTrendChart data={insights.painTrend} /> : null}
+            {insights.painTrend.length > 1 ? (
+              <PainTrendChart data={insights.painTrend} />
+            ) : null}
 
             {insights.commonSymptoms.length > 0 ? (
               <FrequencyChart
@@ -176,7 +194,10 @@ export function InsightsScreen() {
                 <SectionHeader title={INSIGHTS.historyTitle} />
                 <ul className="card divide-y divide-[var(--color-line)] p-0">
                   {[...cycle.data.spans].reverse().map((span) => (
-                    <li key={span.start} className="flex justify-between gap-3 px-5 py-3 text-sm">
+                    <li
+                      key={span.start}
+                      className="flex justify-between gap-3 px-5 py-3 text-sm"
+                    >
                       <span>{formatRange(span.start, span.end)}</span>
                       <span className="text-[var(--color-muted)]">
                         {INSIGHTS.days(span.duration)}

@@ -47,7 +47,7 @@ export function CycleLengthChart({
   data: Array<{ label: string; length: number }>;
 }) {
   const lengths = data.map((entry) => entry.length);
-  const summary = `Cycle length ranges from ${Math.min(...lengths)} to ${Math.max(...lengths)} days across your last ${data.length} cycles.`;
+  const summary = `Cycle length ranges from ${Math.min(...lengths)} to ${Math.max(...lengths)} days across the last ${data.length} recorded cycles.`;
 
   return (
     <ChartFrame title="Cycle length" summary={summary}>
@@ -77,7 +77,7 @@ export function CycleLengthChart({
 
 export function PainTrendChart({ data }: { data: Array<{ date: string; pain: number }> }) {
   const values = data.map((entry) => entry.pain);
-  const summary = `Pain ranges from ${Math.min(...values)} to ${Math.max(...values)} across your last ${data.length} logged days.`;
+  const summary = `Pain ranges from ${Math.min(...values)} to ${Math.max(...values)} across the last ${data.length} logged days.`;
 
   return (
     <ChartFrame title="Pain over time" summary={summary}>

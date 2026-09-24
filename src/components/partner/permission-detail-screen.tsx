@@ -11,7 +11,9 @@ import { useSharedSummary } from "@/hooks/use-partner";
 import { SHARING } from "@/lib/copy";
 
 function stamp(value: { toDate: () => Date } | undefined): string {
-  return value ? format(value.toDate(), "d MMM yyyy, HH:mm", { locale: enLocale }) : "—";
+  return value
+    ? format(value.toDate(), "d MMM yyyy, HH:mm", { locale: enLocale })
+    : "—";
 }
 
 /** Menampilkan persis isi dokumen yang bisa dibaca Ammar — biar ga ada kejutan. */
@@ -22,7 +24,12 @@ export function PermissionDetailScreen() {
   const visibleFields = summary.data
     ? Object.entries(summary.data).filter(
         ([key, value]) =>
-          !["relationshipId", "primaryUserId", "partnerUserId", "updatedAt"].includes(key) &&
+          ![
+            "relationshipId",
+            "primaryUserId",
+            "partnerUserId",
+            "updatedAt",
+          ].includes(key) &&
           value !== undefined &&
           value !== null,
       )
@@ -50,7 +57,10 @@ export function PermissionDetailScreen() {
             </section>
 
             <section>
-              <SectionHeader title={SHARING.visibleNow} description={SHARING.visibleNowBody} />
+              <SectionHeader
+                title={SHARING.visibleNow}
+                description={SHARING.visibleNowBody}
+              />
               {visibleFields.length === 0 ? (
                 <p className="card p-5 text-sm text-[var(--color-muted)]">
                   {SHARING.nothingShared}
@@ -58,7 +68,10 @@ export function PermissionDetailScreen() {
               ) : (
                 <ul className="card divide-y divide-[var(--color-line)] p-0 text-sm">
                   {visibleFields.map(([key, value]) => (
-                    <li key={key} className="flex justify-between gap-3 px-5 py-3">
+                    <li
+                      key={key}
+                      className="flex justify-between gap-3 px-5 py-3"
+                    >
                       <span className="text-[var(--color-muted)]">{key}</span>
                       <span className="text-right">
                         {typeof value === "object"
@@ -75,15 +88,21 @@ export function PermissionDetailScreen() {
               <SectionHeader title={SHARING.historyTitle} />
               <ul className="card divide-y divide-[var(--color-line)] p-0 text-sm">
                 <li className="flex justify-between gap-3 px-5 py-3">
-                  <span className="text-[var(--color-muted)]">Connected since</span>
+                  <span className="text-[var(--color-muted)]">
+                    Connected since
+                  </span>
                   <span>{stamp(relationship.pairedAt)}</span>
                 </li>
                 <li className="flex justify-between gap-3 px-5 py-3">
-                  <span className="text-[var(--color-muted)]">Last updated</span>
+                  <span className="text-[var(--color-muted)]">
+                    Last updated
+                  </span>
                   <span>{stamp(summary.data?.updatedAt)}</span>
                 </li>
                 <li className="flex justify-between gap-3 px-5 py-3">
-                  <span className="text-[var(--color-muted)]">Disconnected</span>
+                  <span className="text-[var(--color-muted)]">
+                    Disconnected
+                  </span>
                   <span>{stamp(relationship.revokedAt)}</span>
                 </li>
               </ul>

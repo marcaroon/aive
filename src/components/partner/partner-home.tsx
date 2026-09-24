@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { AUTH_ENABLED } from "@/lib/config";
+import { FullPartnerHome } from "./full-partner-home";
 import { Settings } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
 import { PageContainer, SectionHeader } from "@/components/ui/card";
@@ -15,6 +17,10 @@ import { useOpenSupportRequest, useSharedSummary } from "@/hooks/use-partner";
 import { PAIR, PARTNER, STATES } from "@/lib/copy";
 
 export function PartnerHome() {
+  return AUTH_ENABLED ? <LegacyPartnerHome /> : <FullPartnerHome />;
+}
+
+function LegacyPartnerHome() {
   const { profile } = useAuthContext();
   const { relationship, loading: relationshipLoading } = useRelationship();
   const summary = useSharedSummary();
@@ -38,7 +44,9 @@ export function PartnerHome() {
 
       <PageContainer>
         <header className="mb-5">
-          <h1 className="text-2xl font-semibold tracking-tight">Hey, {name} 🌻</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Hey, {name} 🌻
+          </h1>
         </header>
 
         {relationshipLoading ? <LoadingState lines={3} /> : null}
@@ -60,7 +68,11 @@ export function PartnerHome() {
             {summary.error ? (
               <ErrorState
                 action={
-                  <Button variant="secondary" size="sm" onClick={() => void summary.refresh()}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => void summary.refresh()}
+                  >
                     {STATES.tryAgain}
                   </Button>
                 }

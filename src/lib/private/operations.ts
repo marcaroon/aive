@@ -12,7 +12,7 @@ import {
   reminderSchema,
   sanitizeText,
 } from "@/lib/validation/schemas";
-import { DEFAULT_PARTNER_PERMISSIONS } from "@/types/permission";
+import { FULL_PARTNER_PERMISSIONS } from "@/types/permission";
 import { SUPPORT_REQUEST_TYPES } from "@/types/relationship";
 import type { UserRole } from "@/types/user";
 import type { DailyLog } from "@/types/daily-log";
@@ -153,12 +153,24 @@ export async function privateOperations(role: UserRole) {
     );
     return { ...data, id: snapshot.id };
   };
+  const readHealth = async (uid: string) => {
+    ensure(uid === primaryId);
+    if (role === "primary") return;
+    const links = await db
+      .collection("relationships")
+      .where("primaryUserId", "==", primaryId)
+      .get();
+    ensure(
+      links.docs.some(
+        (entry) =>
+          entry.data().partnerUserId === partnerId &&
+          entry.data().status === "active",
+      ),
+    );
+  };
   const getPermissions = async (relationshipId: string) => {
     await relationship(relationshipId);
-    const data = (
-      await db.doc(`relationships/${relationshipId}/permissions/current`).get()
-    ).data();
-    return permissionsSchema.parse({ ...DEFAULT_PARTNER_PERMISSIONS, ...data });
+    return { ...FULL_PARTNER_PERMISSIONS };
   };
   const listPeriods = async () => {
     const snapshot = await db
@@ -252,15 +264,13 @@ export async function privateOperations(role: UserRole) {
       todayLog: (log ?? null) as DailyLog | null,
       isOnPeriodToday: periods.some((entry) => entry.date === today),
     });
-    await db
-      .doc(`sharedSummaries/${relationshipId}`)
-      .set({
-        relationshipId,
-        primaryUserId: primaryId,
-        partnerUserId: partnerId,
-        ...fields,
-        updatedAt: stamp(),
-      });
+    await db.doc(`sharedSummaries/${relationshipId}`).set({
+      relationshipId,
+      primaryUserId: primaryId,
+      partnerUserId: partnerId,
+      ...fields,
+      updatedAt: stamp(),
+    });
   };
   const refreshSummary = async () => {
     const links = await db
@@ -309,7 +319,7 @@ export async function privateOperations(role: UserRole) {
 
   return {
     fetchUserDocument: operation(z.tuple([id]), async (uid) => {
-      own(uid);
+      if (uid !== ownId) await readHealth(uid);
       return read(`users/${uid}`);
     }),
     updateUserDocument: operation(
@@ -343,7 +353,7 @@ export async function privateOperations(role: UserRole) {
         .update({ onboardingCompleted: true, updatedAt: stamp() });
     }),
     getPrimaryProfile: operation(z.tuple([id]), async (uid) => {
-      primary(uid);
+      await readHealth(uid);
       return read(`primaryProfiles/${uid}`);
     }),
     savePrimaryProfile: operation(
@@ -378,7 +388,7 @@ export async function privateOperations(role: UserRole) {
       },
     ),
     listPeriodDays: operation(z.tuple([id]), async (uid) => {
-      primary(uid);
+      await readHealth(uid);
       return listPeriods();
     }),
     setPeriodDay: operation(
@@ -431,7 +441,7 @@ export async function privateOperations(role: UserRole) {
       return recompute();
     }),
     getDailyLog: operation(z.tuple([id, day]), async (uid, date) => {
-      primary(uid);
+      await readHealth(uid);
       return read(`users/${uid}/dailyLogs/${date}`);
     }),
     saveDailyLog: operation(
@@ -459,13 +469,13 @@ export async function privateOperations(role: UserRole) {
       },
     ),
     listRecentLogs: operation(z.tuple([id, count]), async (uid, max) => {
-      primary(uid);
+      await readHealth(uid);
       return rows(`users/${uid}/dailyLogs`, "date", "desc", max);
     }),
     listLogsBetween: operation(
       z.tuple([id, day, day]),
       async (uid, start, end) => {
-        primary(uid);
+        await readHealth(uid);
         const snapshot = await db
           .collection(`users/${uid}/dailyLogs`)
           .where("date", ">=", start)
@@ -510,17 +520,6 @@ export async function privateOperations(role: UserRole) {
       },
     ),
     getPermissions: operation(z.tuple([id]), getPermissions),
-    savePermissions: operation(
-      z.tuple([id, permissionsSchema]),
-      async (rid, data) => {
-        primary(primaryId);
-        await relationship(rid);
-        await db
-          .doc(`relationships/${rid}/permissions/current`)
-          .set({ relationshipId: rid, ...data, updatedAt: stamp() });
-        await syncSummary(rid);
-      },
-    ),
     getSharedSummary: operation(z.tuple([id]), async (rid) => {
       await relationship(rid);
       await syncSummary(rid);
@@ -538,110 +537,6 @@ export async function privateOperations(role: UserRole) {
       await relationship(rid, false);
       await db.doc(`sharedSummaries/${rid}`).delete();
     }),
-    revokePartnerAccess: operation(z.tuple([id, id]), async (rid, uid) => {
-      primary(uid);
-      await relationship(rid);
-      const batch = db.batch();
-      batch.delete(db.doc(`sharedSummaries/${rid}`));
-      batch.update(db.doc(`relationships/${rid}`), {
-        status: "revoked",
-        revokedAt: stamp(),
-        updatedAt: stamp(),
-      });
-      await batch.commit();
-    }),
-    listActiveInvitations: operation(z.tuple([id]), async (uid) => {
-      primary(uid);
-      const snapshot = await db
-        .collection("partnerInvitations")
-        .where("primaryUserId", "==", uid)
-        .get();
-      return snapshot.docs
-        .filter(
-          (entry) =>
-            entry.data().status === "active" &&
-            entry.data().expiresAt.toMillis() > Date.now(),
-        )
-        .map((entry) => ({ ...entry.data(), id: entry.id }));
-    }),
-    createPairingCode: operation(z.tuple([id]), async (uid) => {
-      primary(uid);
-      const code = Array.from(
-        crypto.getRandomValues(new Uint8Array(6)),
-        (n) => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[n % 31],
-      ).join("");
-      const ref = db.doc(`partnerInvitations/${code}`);
-      await ref.create({
-        primaryUserId: uid,
-        code,
-        status: "active",
-        expiresAt: Timestamp.fromMillis(Date.now() + 86400000),
-        createdAt: stamp(),
-      });
-      return read(ref.path);
-    }),
-    cancelInvitation: operation(z.tuple([id]), async (code) => {
-      primary(primaryId);
-      const ref = db.doc(`partnerInvitations/${code}`);
-      ensure((await ref.get()).data()?.primaryUserId === primaryId);
-      await ref.update({ status: "revoked" });
-    }),
-    redeemPairingCode: operation(
-      z.tuple([z.string().regex(/^[A-Z2-9]{6}$/), id]),
-      async (code, uid) => {
-        own(uid);
-        ensure(role === "partner");
-        const invitation = db.doc(`partnerInvitations/${code}`);
-        const ref = db.collection("relationships").doc();
-        await db.runTransaction(async (transaction) => {
-          const snapshot = await transaction.get(invitation);
-          const data = snapshot.data();
-          const existing = await transaction.get(
-            db
-              .collection("relationships")
-              .where("primaryUserId", "==", primaryId),
-          );
-          ensure(
-            !existing.docs.some((entry) => entry.data().status === "active"),
-          );
-          ensure(
-            data &&
-              data.primaryUserId === primaryId &&
-              data.status === "active" &&
-              data.expiresAt.toMillis() > Date.now(),
-          );
-          transaction.create(ref, {
-            primaryUserId: primaryId,
-            partnerUserId: partnerId,
-            status: "active",
-            inviteCode: code,
-            pairedAt: stamp(),
-            createdAt: stamp(),
-            updatedAt: stamp(),
-          });
-          transaction.update(invitation, {
-            status: "used",
-            usedAt: stamp(),
-            usedBy: uid,
-          });
-        });
-        return read(ref.path);
-      },
-    ),
-    initialisePairedRelationship: operation(
-      z.tuple([id, id]),
-      async (rid, uid) => {
-        primary(uid);
-        await relationship(rid);
-        await db
-          .doc(`relationships/${rid}/permissions/current`)
-          .set({
-            relationshipId: rid,
-            ...DEFAULT_PARTNER_PERMISSIONS,
-            updatedAt: stamp(),
-          });
-      },
-    ),
     listLoveNotes: operation(
       z.tuple([id, id, count]),
       async (rid, uid, max) => {
@@ -667,14 +562,12 @@ export async function privateOperations(role: UserRole) {
       async (rid, uid, message, emoji) => {
         own(uid);
         await relationship(rid);
-        await db
-          .collection(`relationships/${rid}/loveNotes`)
-          .add({
-            authorId: uid,
-            message: sanitizeText(message),
-            ...(emoji ? { emoji } : {}),
-            createdAt: stamp(),
-          });
+        await db.collection(`relationships/${rid}/loveNotes`).add({
+          authorId: uid,
+          message: sanitizeText(message),
+          ...(emoji ? { emoji } : {}),
+          createdAt: stamp(),
+        });
       },
     ),
     markNoteRead: operation(z.tuple([id, id]), async (rid, noteId) => {
@@ -723,14 +616,12 @@ export async function privateOperations(role: UserRole) {
         primary(primaryId);
         ensure((await getPermissions(rid)).shareSupportRequest);
         ensure(type !== "Custom message" || message?.trim());
-        await db
-          .collection(`relationships/${rid}/supportRequests`)
-          .add({
-            type,
-            ...(message ? { message: sanitizeText(message) } : {}),
-            status: "sent",
-            createdAt: stamp(),
-          });
+        await db.collection(`relationships/${rid}/supportRequests`).add({
+          type,
+          ...(message ? { message: sanitizeText(message) } : {}),
+          status: "sent",
+          createdAt: stamp(),
+        });
       },
     ),
     updateRequestStatus: operation(
@@ -759,7 +650,7 @@ export async function privateOperations(role: UserRole) {
       },
     ),
     listReminders: operation(z.tuple([id]), async (uid) => {
-      own(uid);
+      if (uid !== ownId) await readHealth(uid);
       return rows(`users/${uid}/reminders`, "time", "asc");
     }),
     createReminder: operation(

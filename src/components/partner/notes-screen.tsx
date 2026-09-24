@@ -8,14 +8,22 @@ import { LoveNoteCard } from "./love-note-card";
 import { useRelationship } from "@/contexts/relationship-context";
 import { useLoveNotes } from "@/hooks/use-partner";
 import { PARTNER } from "@/lib/copy";
+import { SupportRequestComposer } from "./support-request-composer";
+import { SUPPORT } from "@/lib/copy";
 
-export function NotesScreen({ backHref }: { backHref?: string }) {
+export function NotesScreen({
+  backHref,
+  showSupport = false,
+}: {
+  backHref?: string;
+  showSupport?: boolean;
+}) {
   const { relationship, loading } = useRelationship();
   const notes = useLoveNotes(50);
 
   return (
     <>
-      <AppHeader title="Notes" backHref={backHref} />
+      <AppHeader title={showSupport ? "Us" : "Notes"} backHref={backHref} />
 
       <PageContainer>
         {loading ? <LoadingState lines={3} /> : null}
@@ -29,6 +37,15 @@ export function NotesScreen({ backHref }: { backHref?: string }) {
 
         {!loading && relationship ? (
           <div className="space-y-6">
+            {showSupport && (
+              <section>
+                <SectionHeader
+                  title={SUPPORT.title}
+                  description={SUPPORT.subtitle}
+                />
+                <SupportRequestComposer />
+              </section>
+            )}
             <LoveNoteComposer onSent={() => void notes.refresh()} />
 
             <section>
@@ -37,13 +54,19 @@ export function NotesScreen({ backHref }: { backHref?: string }) {
               {notes.loading ? <LoadingState lines={2} /> : null}
 
               {!notes.loading && (notes.data?.length ?? 0) === 0 ? (
-                <EmptyState title={PARTNER.noNotes} description={PARTNER.noNotesBody} />
+                <EmptyState
+                  title={PARTNER.noNotes}
+                  description={PARTNER.noNotesBody}
+                />
               ) : null}
 
               <ul className="space-y-3">
                 {notes.data?.map((note) => (
                   <li key={note.id}>
-                    <LoveNoteCard note={note} onChanged={() => void notes.refresh()} />
+                    <LoveNoteCard
+                      note={note}
+                      onChanged={() => void notes.refresh()}
+                    />
                   </li>
                 ))}
               </ul>

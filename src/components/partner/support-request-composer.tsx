@@ -80,7 +80,10 @@ export function SupportRequestComposer() {
 
       {selected === "Custom message" ? (
         <div>
-          <label htmlFor="support-message" className="mb-1.5 block text-sm font-medium">
+          <label
+            htmlFor="support-message"
+            className="mb-1.5 block text-sm font-medium"
+          >
             {SUPPORT.customLabel}
           </label>
           <textarea
@@ -94,7 +97,12 @@ export function SupportRequestComposer() {
         </div>
       ) : null}
 
-      <Button fullWidth disabled={!selected} loading={sending} onClick={() => void send()}>
+      <Button
+        fullWidth
+        disabled={!selected}
+        loading={sending}
+        onClick={() => void send()}
+      >
         <Send className="h-4 w-4" aria-hidden />
         {SUPPORT.send}
       </Button>

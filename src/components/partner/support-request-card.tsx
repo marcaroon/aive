@@ -6,7 +6,10 @@ import { enUS as enLocale } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/ui/form-field";
 import { useRelationship } from "@/contexts/relationship-context";
-import { PARTNER_RESPONSES, updateRequestStatus } from "@/services/support-request-service";
+import {
+  PARTNER_RESPONSES,
+  updateRequestStatus,
+} from "@/services/support-request-service";
 import {
   SUPPORT_REQUEST_LABELS,
   SUPPORT_STATUS_LABELS,
@@ -29,7 +32,9 @@ export function SupportRequestCard({
   // Mark as seen the moment it is on screen, so she knows it reached you.
   useEffect(() => {
     if (!relationship || request.status !== "sent") return;
-    void updateRequestStatus(relationship.id, request.id, "seen").then(onChanged);
+    void updateRequestStatus(relationship.id, request.id, "seen").then(
+      onChanged,
+    );
   }, [relationship, request.id, request.status, onChanged]);
 
   const respond = async (response: string) => {
@@ -37,7 +42,12 @@ export function SupportRequestCard({
     setBusy(true);
     setError(null);
     try {
-      await updateRequestStatus(relationship.id, request.id, "acknowledged", response);
+      await updateRequestStatus(
+        relationship.id,
+        request.id,
+        "acknowledged",
+        response,
+      );
       onChanged();
     } catch {
       setError("Couldn't send your reply. Try again.");
@@ -108,7 +118,12 @@ export function SupportRequestCard({
           : null}
 
         {request.status !== "resolved" ? (
-          <Button size="sm" variant="secondary" loading={busy} onClick={() => void resolve()}>
+          <Button
+            size="sm"
+            variant="secondary"
+            loading={busy}
+            onClick={() => void resolve()}
+          >
             Mark as done
           </Button>
         ) : null}

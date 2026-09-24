@@ -39,12 +39,18 @@ export function CareScreen() {
         {!loading && relationship ? (
           <div className="space-y-6">
             <section>
-              <SectionHeader title={PARTNER.careTitle} description={PARTNER.careSubtitle} />
+              <SectionHeader
+                title={PARTNER.careTitle}
+                description={PARTNER.careSubtitle}
+              />
               <ul className="space-y-2">
                 {suggestions.map((suggestion) => (
                   <li key={suggestion.id} className="card flex gap-3 p-4">
                     <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-butter)]">
-                      <Sparkles className="h-4 w-4 text-[var(--color-primary-deep)]" aria-hidden />
+                      <Sparkles
+                        className="h-4 w-4 text-[var(--color-primary-deep)]"
+                        aria-hidden
+                      />
                     </span>
                     <p className="text-sm leading-relaxed">{suggestion.text}</p>
                   </li>
@@ -57,7 +63,10 @@ export function CareScreen() {
               {requests.loading ? <LoadingState lines={2} /> : null}
 
               {!requests.loading && (requests.data?.length ?? 0) === 0 ? (
-                <EmptyState title={PARTNER.noRequests} description={PARTNER.noRequestsBody} />
+                <EmptyState
+                  title={PARTNER.noRequests}
+                  description={PARTNER.noRequestsBody}
+                />
               ) : null}
 
               <div className="space-y-3">

@@ -72,7 +72,7 @@ export function buildInsightSentences(insights: InsightSummary): string[] {
 
   if (insights.averageCycleLength && insights.cycleCount > 0) {
     sentences.push(
-      `Your cycle averages ${insights.averageCycleLength} days across your last ${insights.cycleCount} cycles.`,
+      `Cycle length averages ${insights.averageCycleLength} days across the last ${insights.cycleCount} recorded cycles.`,
     );
   }
 
@@ -85,19 +85,19 @@ export function buildInsightSentences(insights: InsightSummary): string[] {
   const topSymptom = insights.commonSymptoms[0];
   if (topSymptom && topSymptom.count > 1) {
     sentences.push(
-      `Your most logged symptom: ${SYMPTOM_LABELS[topSymptom.value as Symptom] ?? topSymptom.value}.`,
+      `Most logged symptom: ${SYMPTOM_LABELS[topSymptom.value as Symptom] ?? topSymptom.value}.`,
     );
   }
 
   const topMood = insights.moodFrequency[0];
   if (topMood && topMood.count > 1) {
     sentences.push(
-      `Your most logged mood: ${MOOD_LABELS[topMood.value as Mood] ?? topMood.value}.`,
+      `Most logged mood: ${MOOD_LABELS[topMood.value as Mood] ?? topMood.value}.`,
     );
   }
 
   if (insights.averagePain !== null) {
-    sentences.push(`Your logged pain averages ${insights.averagePain} out of 10.`);
+    sentences.push(`Logged pain averages ${insights.averagePain} out of 10.`);
   }
 
   return sentences;

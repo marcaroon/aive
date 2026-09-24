@@ -7,7 +7,11 @@ import { EyeOff } from "lucide-react";
 import { PARTNER } from "@/lib/copy";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useRelationship } from "@/contexts/relationship-context";
-import { hideNoteForUser, NOTE_REACTIONS, reactToNote } from "@/services/love-note-service";
+import {
+  hideNoteForUser,
+  NOTE_REACTIONS,
+  reactToNote,
+} from "@/services/love-note-service";
 import type { LoveNote } from "@/types/relationship";
 import { cn } from "@/lib/utils/cn";
 
@@ -28,7 +32,11 @@ export function LoveNoteCard({
     if (!relationship || busy) return;
     setBusy(true);
     try {
-      await reactToNote(relationship.id, note.id, note.reaction === reaction ? "" : reaction);
+      await reactToNote(
+        relationship.id,
+        note.id,
+        note.reaction === reaction ? "" : reaction,
+      );
       onChanged();
     } finally {
       setBusy(false);
@@ -59,7 +67,10 @@ export function LoveNoteCard({
         </span>
         {note.createdAt ? (
           <span className="text-xs text-[var(--color-muted)]">
-            {formatDistanceToNow(note.createdAt.toDate(), { addSuffix: true, locale: enLocale })}
+            {formatDistanceToNow(note.createdAt.toDate(), {
+              addSuffix: true,
+              locale: enLocale,
+            })}
           </span>
         ) : null}
       </div>
@@ -70,30 +81,30 @@ export function LoveNoteCard({
       </p>
 
       <div className="mt-3 flex items-center gap-1">
-        {!mine
-          ? NOTE_REACTIONS.map((reaction) => (
-              <button
-                key={reaction}
-                type="button"
-                aria-label={`React with ${reaction}`}
-                aria-pressed={note.reaction === reaction}
-                disabled={busy}
-                onClick={() => void react(reaction)}
-                className={cn(
-                  "tap w-9 rounded-xl text-base transition-colors",
-                  note.reaction === reaction
-                    ? "bg-[var(--color-butter)]"
-                    : "hover:bg-[var(--color-cream)]",
-                )}
-              >
-                {reaction}
-              </button>
-            ))
-          : note.reaction ? (
-              <span className="text-base" aria-label="Reaksi dia">
-                {note.reaction}
-              </span>
-            ) : null}
+        {!mine ? (
+          NOTE_REACTIONS.map((reaction) => (
+            <button
+              key={reaction}
+              type="button"
+              aria-label={`React with ${reaction}`}
+              aria-pressed={note.reaction === reaction}
+              disabled={busy}
+              onClick={() => void react(reaction)}
+              className={cn(
+                "tap w-9 rounded-xl text-base transition-colors",
+                note.reaction === reaction
+                  ? "bg-[var(--color-butter)]"
+                  : "hover:bg-[var(--color-cream)]",
+              )}
+            >
+              {reaction}
+            </button>
+          ))
+        ) : note.reaction ? (
+          <span className="text-base" aria-label="Reaksi dia">
+            {note.reaction}
+          </span>
+        ) : null}
 
         <button
           type="button"

@@ -1,8 +1,12 @@
 "use client";
 
-import { useAuthContext } from "@/contexts/auth-context";
+import { useHealthUser } from "./use-health-user";
 import { useAsync } from "./use-async";
-import { getPrimaryProfile, loadCycleHistory, type CycleHistory } from "@/services/cycle-service";
+import {
+  getPrimaryProfile,
+  loadCycleHistory,
+  type CycleHistory,
+} from "@/services/cycle-service";
 import type { PrimaryProfile } from "@/types/user";
 
 export interface CycleData extends CycleHistory {
@@ -11,8 +15,7 @@ export interface CycleData extends CycleHistory {
 
 /** Loads the profile and everything derived from the recorded period days. */
 export function useCycle() {
-  const { user } = useAuthContext();
-  const userId = user?.uid ?? null;
+  const { userId, isPartner } = useHealthUser();
 
   return useAsync<CycleData>(
     userId
@@ -23,5 +26,6 @@ export function useCycle() {
         }
       : null,
     [userId],
+    isPartner ? 15000 : 0,
   );
 }

@@ -33,6 +33,7 @@ describe("authentication mode routing", () => {
         "location",
       ),
     ).toBeNull();
+    expect(middleware(new NextRequest("https://aive.example/app/partner/permissions")).headers.get("location")).toBe("https://aive.example/app/partner");
   });
   it("restores login guards when the flag is re-enabled", async () => {
     vi.stubEnv("NEXT_PUBLIC_AUTH_ENABLED", "true");

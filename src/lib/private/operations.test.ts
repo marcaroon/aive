@@ -72,12 +72,12 @@ beforeEach(() => {
   });
 });
 describe("server-enforced private operations", () => {
-  it("prevents a partner from reading or writing raw health data, even with a forged ID", async () => {
+  it("allows the configured partner to read all health data but never modify it", async () => {
     const ops = await privateOperations("partner");
-    await expect(ops.getDailyLog(["aivel", "2026-09-24"])).rejects.toThrow();
+    expect(await ops.getDailyLog(["aivel", "2026-09-24"])).toBeNull();
     await expect(ops.getDailyLog(["ammar", "2026-09-24"])).rejects.toThrow();
-    await expect(ops.listPeriodDays(["aivel"])).rejects.toThrow();
-    await expect(ops.getPrimaryProfile(["aivel"])).rejects.toThrow();
+    expect(await ops.listPeriodDays(["aivel"])).toEqual([]);
+    expect(await ops.getPrimaryProfile(["aivel"])).toBeNull();
     await expect(ops.deleteHealthData(["aivel"])).rejects.toThrow();
     await expect(
       ops.saveDailyLog([
@@ -85,8 +85,47 @@ describe("server-enforced private operations", () => {
         { date: "2026-09-24", moods: [], symptoms: [] },
       ]),
     ).rejects.toThrow();
+    expect(ops).not.toHaveProperty("savePermissions");
+  });
+  it("returns the same complete check-in to both people despite old sharing flags", async () => {
+    const log = {
+      date: "2026-09-24",
+      moods: ["happy", "tired"],
+      symptoms: ["cramps"],
+      painLevel: 0,
+      flowLevel: "light",
+      energyLevel: "low",
+      sleepHours: 7.5,
+      sleepQuality: "good",
+      sleepNotes: "Woke up once",
+      waterGlasses: 0,
+      activities: ["walking"],
+      privateNotes: "A full note",
+      createdAt: Timestamp.fromMillis(1000),
+    };
+    store.set("users/aivel/dailyLogs/2026-09-24", log);
+    const partner = await privateOperations("partner");
+    const primary = await privateOperations("primary");
+    expect(await partner.getDailyLog(["aivel", "2026-09-24"])).toEqual(
+      await primary.getDailyLog(["aivel", "2026-09-24"]),
+    );
+    expect(await partner.getDailyLog(["aivel", "2026-09-24"])).toMatchObject(
+      log,
+    );
+    expect(await partner.listRecentLogs(["aivel", 90])).toEqual([
+      expect.objectContaining(log),
+    ]);
     await expect(
-      ops.savePermissions(["pair", DEFAULT_PARTNER_PERMISSIONS]),
+      partner.getDailyLog(["other-primary", "2026-09-24"]),
+    ).rejects.toThrow();
+    await expect(
+      partner.savePrimaryProfile([
+        "aivel",
+        { averageCycleLength: 28, averagePeriodDuration: 5 },
+      ]),
+    ).rejects.toThrow();
+    await expect(
+      partner.deleteReminder(["aivel", "reminder"]),
     ).rejects.toThrow();
   });
   it("blocks unrelated relationships and impersonated note authors", async () => {
@@ -119,7 +158,7 @@ describe("server-enforced private operations", () => {
       primary.getDailyLog(["../another", "2026-09-24"]),
     ).rejects.toThrow();
   });
-  it("only returns explicitly shared summary fields, clearing stale fields", async () => {
+  it("rebuilds current summary fields instead of returning stale historical fields", async () => {
     const ops = await privateOperations("partner");
     store.set("sharedSummaries/pair", {
       dailyNote: "stale private note",
@@ -168,15 +207,23 @@ describe("server-enforced private operations", () => {
       "select the intended profiles",
     );
   });
-  it("keeps disabled support requests out of the partner view", async () => {
+  it("ignores obsolete per-field switches in the shared personal space", async () => {
     store.set("relationships/pair/permissions/current", {
       ...DEFAULT_PARTNER_PERMISSIONS,
       shareSupportRequest: false,
     });
     const ops = await privateOperations("partner");
     expect(await ops.listSupportRequests(["pair", 20])).toEqual([]);
-    await expect(
-      ops.updateRequestStatus(["pair", "request", "seen", null]),
-    ).rejects.toThrow();
+    expect(await ops.getPermissions(["pair"])).toEqual({
+      ...DEFAULT_PARTNER_PERMISSIONS,
+      shareCyclePhase: true,
+      sharePredictedPeriod: true,
+      shareMood: true,
+      sharePainLevel: true,
+      shareFlowStatus: true,
+      shareSymptoms: true,
+      shareDailyNotes: true,
+      shareSupportRequest: true,
+    });
   });
 });

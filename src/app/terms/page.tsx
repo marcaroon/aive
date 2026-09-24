@@ -1,15 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AppLogo } from "@/components/ui/app-logo";
-import { HEALTHCARE_SUGGESTION, MEDICAL_DISCLAIMER } from "@/lib/cycle/prediction";
+import {
+  HEALTHCARE_SUGGESTION,
+  MEDICAL_DISCLAIMER,
+} from "@/lib/cycle/prediction";
 
 export const metadata: Metadata = { title: "Terms" };
 
 const SECTIONS = [
-  { heading: "About Aivé", body: "Aivé is a personal tool for recording and reviewing your menstrual cycle. It is not a public service, a medical product, or a replacement for professional care." },
-  { heading: "Estimates, not guarantees", body: "Period, fertile window, and ovulation estimates use the dates you log. Cycles can change, so treat these dates as a rough guide." },
-  { heading: "Not contraception", body: "Do not use the fertile window estimate as contraception or to plan or avoid pregnancy." },
-  { heading: "Your choices", body: "You choose what to record and share. Keep your private access link safe and review sharing settings when your needs change." },
+  {
+    heading: "About Aivé",
+    body: "Aivé is a personal tool for recording and reviewing your menstrual cycle. It is not a public service, a medical product, or a replacement for professional care.",
+  },
+  {
+    heading: "Estimates, not guarantees",
+    body: "Period, fertile window, and ovulation estimates use the dates you log. Cycles can change, so treat these dates as a rough guide.",
+  },
+  {
+    heading: "Not contraception",
+    body: "Do not use the fertile window estimate as contraception or to plan or avoid pregnancy.",
+  },
+  {
+    heading: "Your choices",
+    body: "You choose what to record and share. Keep your private access link safe and review sharing settings when your needs change.",
+  },
 ];
 
 export default function TermsPage() {

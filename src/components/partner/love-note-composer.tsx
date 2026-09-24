@@ -66,7 +66,9 @@ export function LoveNoteComposer({ onSent }: { onSent?: () => void }) {
       </div>
 
       <fieldset>
-        <legend className="mb-1.5 text-sm font-medium">{PARTNER.noteFeeling}</legend>
+        <legend className="mb-1.5 text-sm font-medium">
+          {PARTNER.noteFeeling}
+        </legend>
         <div className="flex gap-2">
           {NOTE_REACTIONS.map((option) => (
             <button
@@ -88,7 +90,12 @@ export function LoveNoteComposer({ onSent }: { onSent?: () => void }) {
         </div>
       </fieldset>
 
-      <Button fullWidth disabled={!message.trim()} loading={sending} onClick={() => void send()}>
+      <Button
+        fullWidth
+        disabled={!message.trim()}
+        loading={sending}
+        onClick={() => void send()}
+      >
         <Send className="h-4 w-4" aria-hidden />
         {PARTNER.sendNote}
       </Button>

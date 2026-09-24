@@ -36,7 +36,9 @@ export function PermissionToggleList() {
             <li key={key} className="flex items-start gap-3 px-5 py-4">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium">{PERMISSION_LABELS[key]}</span>
+                  <span className="text-sm font-medium">
+                    {PERMISSION_LABELS[key]}
+                  </span>
                   <PermissionBadge shared={enabled} />
                 </div>
                 <p className="mt-0.5 text-xs leading-relaxed text-[var(--color-muted)]">
@@ -53,7 +55,9 @@ export function PermissionToggleList() {
                 onClick={() => void toggle(key, !enabled)}
                 className={cn(
                   "relative mt-0.5 h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-60",
-                  enabled ? "bg-[var(--color-primary-deep)]" : "bg-[var(--color-line)]",
+                  enabled
+                    ? "bg-[var(--color-primary-deep)]"
+                    : "bg-[var(--color-line)]",
                 )}
               >
                 <span
@@ -69,7 +73,9 @@ export function PermissionToggleList() {
         })}
       </ul>
 
-      <p className="text-xs leading-relaxed text-[var(--color-muted)]">{SHARING.toggleNote}</p>
+      <p className="text-xs leading-relaxed text-[var(--color-muted)]">
+        {SHARING.toggleNote}
+      </p>
     </div>
   );
 }

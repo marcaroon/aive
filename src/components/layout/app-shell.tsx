@@ -10,8 +10,13 @@ import {
   NotebookPen,
   User,
 } from "lucide-react";
-import { DesktopSidebar, MobileBottomNavigation, type NavItem } from "./bottom-navigation";
+import {
+  DesktopSidebar,
+  MobileBottomNavigation,
+  type NavItem,
+} from "./bottom-navigation";
 import type { UserRole } from "@/types/user";
+import { AUTH_ENABLED } from "@/lib/config";
 
 /**
  * The nav lists live inside the client boundary on purpose: icon components
@@ -33,8 +38,23 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
   ],
 };
 
-export function AppShell({ role, children }: { role: UserRole; children: ReactNode }) {
-  const items = NAV_ITEMS[role];
+export function AppShell({
+  role,
+  children,
+}: {
+  role: UserRole;
+  children: ReactNode;
+}) {
+  const items =
+    role === "partner" && !AUTH_ENABLED
+      ? [
+          { href: "/partner", label: "Home", icon: Home },
+          { href: "/partner/calendar", label: "Calendar", icon: CalendarDays },
+          { href: "/partner/log", label: "Check-ins", icon: NotebookPen },
+          { href: "/partner/insights", label: "Insights", icon: LineChart },
+          { href: "/partner/profile", label: "Profile", icon: User },
+        ]
+      : NAV_ITEMS[role];
 
   return (
     <div className="flex min-h-dvh">

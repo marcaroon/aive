@@ -1,8 +1,7 @@
 "use client";
 
-import { EstimatedBadge, PrivacyBadge } from "@/components/ui/badges";
+import { EstimatedBadge } from "@/components/ui/badges";
 import { PHASE_LABELS } from "@/lib/cycle/phases";
-import { PRIVATE_PLACEHOLDER } from "@/lib/permissions/care-suggestions";
 import { formatRange } from "@/lib/utils/date";
 import {
   MOOD_LABELS,
@@ -28,7 +27,9 @@ function Row({
       <span className="text-sm text-[var(--color-muted)]">{label}</span>
       <span className="flex items-center gap-2 text-right text-sm">
         {value ?? (
-          <span className="text-[var(--color-muted)] italic">{PARTNER.keptPrivate}</span>
+          <span className="text-[var(--color-muted)] italic">
+            {PARTNER.keptPrivate}
+          </span>
         )}
         {value ? badge : null}
       </span>
@@ -36,7 +37,11 @@ function Row({
   );
 }
 
-export function PartnerSummaryCard({ summary }: { summary: SharedSummary | null }) {
+export function PartnerSummaryCard({
+  summary,
+}: {
+  summary: SharedSummary | null;
+}) {
   const nothingShared =
     !summary ||
     [
@@ -53,10 +58,9 @@ export function PartnerSummaryCard({ summary }: { summary: SharedSummary | null 
       <section className="card p-5">
         <div className="mb-2 flex items-center justify-between gap-3">
           <h2 className="text-base font-semibold">{PARTNER.homeTitle}</h2>
-          <PrivacyBadge />
         </div>
         <p className="text-sm leading-relaxed text-[var(--color-muted)]">
-          {PRIVATE_PLACEHOLDER}
+          No cycle or check-in data yet.
         </p>
       </section>
     );
@@ -66,7 +70,6 @@ export function PartnerSummaryCard({ summary }: { summary: SharedSummary | null 
     <section className="card overflow-hidden p-0">
       <div className="flex items-center justify-between gap-3 px-5 pb-2 pt-5">
         <h2 className="text-base font-semibold">{PARTNER.homeTitle}</h2>
-        <PrivacyBadge>{PARTNER.sharedWithYou}</PrivacyBadge>
       </div>
 
       <div className="divide-y divide-[var(--color-line)]">
@@ -88,7 +91,11 @@ export function PartnerSummaryCard({ summary }: { summary: SharedSummary | null 
         />
         <Row
           label={PARTNER.mood}
-          value={summary.mood ? (MOOD_LABELS[summary.mood as Mood] ?? summary.mood) : null}
+          value={
+            summary.mood
+              ? (MOOD_LABELS[summary.mood as Mood] ?? summary.mood)
+              : null
+          }
         />
         <Row
           label={PARTNER.painLevel}
@@ -98,7 +105,10 @@ export function PartnerSummaryCard({ summary }: { summary: SharedSummary | null 
               : null
           }
         />
-        <Row label={PARTNER.onPeriodToday} value={summary.flowStatus ? "Iya" : null} />
+        <Row
+          label={PARTNER.onPeriodToday}
+          value={summary.flowStatus ? "Yes" : "Not logged today"}
+        />
         <Row
           label={PARTNER.symptoms}
           value={

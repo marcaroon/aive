@@ -28,8 +28,7 @@ export function PartnerNoteCard() {
       className="card block p-5 transition-colors hover:bg-[var(--color-cream)]"
     >
       <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
-        <Mail className="h-3.5 w-3.5" aria-hidden />
-        A note for you
+        <Mail className="h-3.5 w-3.5" aria-hidden />A note for you
       </div>
       <p className="mt-2 text-[15px] leading-relaxed">
         {latest.emoji ? <span className="mr-1.5">{latest.emoji}</span> : null}

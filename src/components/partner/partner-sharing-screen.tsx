@@ -74,19 +74,29 @@ export function PartnerSharingScreen() {
                     : undefined
                 }
               />
-              <Button variant="secondary" size="sm" onClick={() => setConfirmRevoke(true)}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setConfirmRevoke(true)}
+              >
                 <Link2Off className="h-4 w-4" aria-hidden />
                 {SHARING.disconnect}
               </Button>
             </section>
 
             <section>
-              <SectionHeader title={SHARING.title} description={SHARING.subtitle} />
+              <SectionHeader
+                title={SHARING.title}
+                description={SHARING.subtitle}
+              />
               <PermissionToggleList />
             </section>
 
             <section>
-              <SectionHeader title={SUPPORT.title} description={SUPPORT.subtitle} />
+              <SectionHeader
+                title={SUPPORT.title}
+                description={SUPPORT.subtitle}
+              />
               <SupportRequestComposer />
             </section>
 

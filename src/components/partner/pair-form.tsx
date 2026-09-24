@@ -9,7 +9,10 @@ import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { FormError, FormSuccess, TextField } from "@/components/ui/form-field";
 import { pairingCodeSchema } from "@/lib/validation/schemas";
-import { PairingError, redeemPairingCode } from "@/services/relationship-service";
+import {
+  PairingError,
+  redeemPairingCode,
+} from "@/services/relationship-service";
 import { useAuthContext } from "@/contexts/auth-context";
 import { AUTH, PAIR } from "@/lib/copy";
 import { AUTH_ENABLED } from "@/lib/config";

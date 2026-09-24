@@ -31,10 +31,20 @@ function parseNav(value: string | undefined) {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (!AUTH_ENABLED) {
+    if (pathname === "/app/partner/permissions") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/app/partner";
+      return NextResponse.redirect(url);
+    }
     if (
-      ["/", "/login", "/register", "/forgot-password", "/onboarding"].includes(
-        pathname,
-      )
+      [
+        "/",
+        "/login",
+        "/register",
+        "/forgot-password",
+        "/onboarding",
+        "/pair",
+      ].includes(pathname)
     ) {
       const url = request.nextUrl.clone();
       url.pathname = "/app";

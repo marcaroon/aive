@@ -142,7 +142,7 @@ export const ACTIVITY_LABELS: Record<Activity, string> = {
 export function painLabel(level: number): string {
   if (level <= 0) return "no pain";
   if (level <= 3) return "mild";
-  if (level <= 6) return "fair";
+  if (level <= 6) return "moderate";
   if (level <= 8) return "severe";
   return "very severe";
 }

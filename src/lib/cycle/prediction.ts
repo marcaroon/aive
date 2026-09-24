@@ -110,13 +110,13 @@ export function isWithinRange(date: DateKey, range: { start: DateKey; end: DateK
 // paling penting untuk tidak disalahpahami.
 
 export const PREDICTION_DISCLAIMER =
-  "All dates are estimates based on your previous cycle logs.";
+  "All dates are estimates based on previous cycle logs.";
 
 export const FERTILE_DISCLAIMER =
   "Do not use this fertile window estimate as contraception.";
 
 export const MEDICAL_DISCLAIMER =
-  "Aivé estimates cycle dates from the information you log. It is not a medical device and does not provide diagnosis, treatment, or contraceptive advice.";
+  "Aivé estimates cycle dates from recorded information. It is not a medical device and does not provide diagnosis, treatment, or contraceptive advice.";
 
 export const HEALTHCARE_SUGGESTION =
   "If symptoms are severe, unusual, or persistent, speak with a qualified healthcare professional.";

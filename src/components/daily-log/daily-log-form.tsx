@@ -5,9 +5,14 @@ import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormError, FormSuccess } from "@/components/ui/form-field";
-import { PrivacyBadge } from "@/components/ui/badges";
 import { FlowSelector } from "@/components/cycle/flow-selector";
-import { MOOD_EMOJIS, MultiSelect, PainScale, SingleSelect, WaterTracker } from "./selectors";
+import {
+  MOOD_EMOJIS,
+  MultiSelect,
+  PainScale,
+  SingleSelect,
+  WaterTracker,
+} from "./selectors";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useRelationship } from "@/contexts/relationship-context";
 import { saveDailyLog } from "@/services/daily-log-service";
@@ -63,9 +68,11 @@ export function DailyLogForm({
 }) {
   const router = useRouter();
   const { user } = useAuthContext();
-  const { relationship, permissions } = useRelationship();
+  const { relationship } = useRelationship();
 
-  const [values, setValues] = useState<DailyLogValues>(() => toValues(date, log));
+  const [values, setValues] = useState<DailyLogValues>(() =>
+    toValues(date, log),
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -74,7 +81,10 @@ export function DailyLogForm({
     setValues(toValues(date, log));
   }, [date, log]);
 
-  const update = <K extends keyof DailyLogValues>(key: K, value: DailyLogValues[K]) => {
+  const update = <K extends keyof DailyLogValues>(
+    key: K,
+    value: DailyLogValues[K],
+  ) => {
     setValues((current) => ({ ...current, [key]: value }));
     setSaved(false);
   };
@@ -99,7 +109,9 @@ export function DailyLogForm({
       onSaved?.();
       router.refresh();
     } catch {
-      setError("Couldn't save your check-in. Check your connection and try again.");
+      setError(
+        "Couldn't save your check-in. Check your connection and try again.",
+      );
     } finally {
       setSaving(false);
     }
@@ -132,7 +144,10 @@ export function DailyLogForm({
       </section>
 
       <section id="pain" className="card space-y-4 p-5">
-        <PainScale value={values.painLevel} onChange={(value) => update("painLevel", value)} />
+        <PainScale
+          value={values.painLevel}
+          onChange={(value) => update("painLevel", value)}
+        />
       </section>
 
       <section id="flow" className="card space-y-4 p-5">
@@ -154,7 +169,10 @@ export function DailyLogForm({
 
       <section id="sleep" className="card space-y-4 p-5">
         <div>
-          <label htmlFor="sleep-hours" className="mb-2 block text-sm font-medium">
+          <label
+            htmlFor="sleep-hours"
+            className="mb-2 block text-sm font-medium"
+          >
             {LOG.sleepDuration}
           </label>
           <input
@@ -168,7 +186,9 @@ export function DailyLogForm({
             onChange={(event) =>
               update(
                 "sleepHours",
-                event.target.value === "" ? undefined : Number(event.target.value),
+                event.target.value === ""
+                  ? undefined
+                  : Number(event.target.value),
               )
             }
             placeholder="Hours"
@@ -207,14 +227,15 @@ export function DailyLogForm({
           <label htmlFor="private-notes" className="text-sm font-medium">
             {LOG.notesLabel}
           </label>
-          <PrivacyBadge>{permissions.shareDailyNotes ? "Shared with Ammar" : "Just you"}</PrivacyBadge>
         </div>
         <textarea
           id="private-notes"
           rows={4}
           maxLength={2000}
           value={values.privateNotes ?? ""}
-          onChange={(event) => update("privateNotes", event.target.value || undefined)}
+          onChange={(event) =>
+            update("privateNotes", event.target.value || undefined)
+          }
           placeholder={LOG.notesPlaceholder}
           className="w-full rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] p-4 text-[15px] leading-relaxed outline-none focus:border-[var(--color-primary-deep)]"
         />

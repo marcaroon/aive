@@ -8,7 +8,10 @@ import { SHARING } from "@/lib/copy";
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/ui/form-field";
 import { PrivacyBadge } from "@/components/ui/badges";
-import { createPairingCode, PairingError } from "@/services/relationship-service";
+import {
+  createPairingCode,
+  PairingError,
+} from "@/services/relationship-service";
 import { useAuthContext } from "@/contexts/auth-context";
 import type { PartnerInvitation } from "@/types/relationship";
 
@@ -62,10 +65,14 @@ export function PairingCodeCard() {
 
       {invitation ? (
         <div className="mt-4 rounded-2xl border border-[var(--color-line)] bg-[var(--color-cream)] p-4 text-center">
-          <p className="font-mono text-3xl font-semibold tracking-[0.3em]">{invitation.code}</p>
+          <p className="font-mono text-3xl font-semibold tracking-[0.3em]">
+            {invitation.code}
+          </p>
           <p className="mt-1 text-xs text-[var(--color-muted)]">
             {SHARING.expires(
-              format(invitation.expiresAt.toDate(), "d MMM 'at' HH:mm", { locale: enLocale }),
+              format(invitation.expiresAt.toDate(), "d MMM 'at' HH:mm", {
+                locale: enLocale,
+              }),
             )}
           </p>
           <button

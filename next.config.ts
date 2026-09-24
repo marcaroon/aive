@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Isolate previews/build verification when another dev server is running.
+  distDir: process.env.AIVE_OUTPUT_DIR || ".next",
   reactStrictMode: true,
   poweredByHeader: false,
   async headers() {

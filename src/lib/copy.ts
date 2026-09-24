@@ -12,8 +12,8 @@ export const HOME = {
   question: "How are you feeling today?",
   quickLogHint: "A quick check-in is enough. No pressure.",
   logToday: "Check in",
-  partnerCardTitle: "What Ammar can see",
-  partnerCardBody: "Your call. Pick what to share.",
+  partnerCardTitle: "Us",
+  partnerCardBody: "Notes, little check-ins, and support.",
   noteTitle: "A little note for you",
 };
 export const CYCLE = {
@@ -52,7 +52,7 @@ export const LOG = {
   activityLegend: "What have you been up to?",
   notesLabel: "Your notes",
   notesPlaceholder: "Anything you want to remember about today.",
-  notesPrivate: "Only shared with Ammar if you turn on note sharing.",
+  notesPrivate: "Your notes are visible in both spaces.",
   saved: "All saved. Thanks for checking in.",
   saveButton: "Save check-in",
   status: {
@@ -95,14 +95,15 @@ export const INSIGHTS = {
   steady: "Steady",
   avgPain: "Average pain",
   predictedTitle: "Next period estimate",
-  noticeTitle: "What your check-ins show",
+  noticeTitle: "What the check-ins show",
   historyTitle: "Period history",
   days: (count: number) => `${count} days`,
 };
 export const PARTNER = {
   homeTitle: "Aivel's day",
-  keptPrivate: "Kept private",
-  privatePlaceholder: "Aivel has kept this to herself.",
+  keptPrivate: "Not logged yet",
+  privatePlaceholder:
+    "No check-in yet. It will show up here once Aivel adds one.",
   sharedWithYou: "Shared with you",
   cyclePhase: "Cycle phase",
   nextPeriod: "Estimated period",
@@ -112,7 +113,7 @@ export const PARTNER = {
   symptoms: "Symptoms",
   sharedNote: "Her shared note",
   careTitle: "Ways to show up",
-  careSubtitle: "A few ideas, based on what Aivel shares.",
+  careSubtitle: "A few ideas, based on Aivel’s check-ins.",
   requestsTitle: "From Aivel",
   noRequests: "Nothing here right now.",
   noRequestsBody: "If Aivel asks for something, it will show up here.",
@@ -127,8 +128,8 @@ export const PARTNER = {
   askedSomething: "She could use a little support",
 };
 export const SHARING = {
-  title: "What Ammar sees",
-  subtitle: "Health details start private. Share only what feels right.",
+  title: "Us",
+  subtitle: "Your shared space for notes and support.",
   connected: "Connected",
   pairedOn: (date: string) => `Connected since ${date}.`,
   disconnect: "Disconnect",
@@ -144,7 +145,7 @@ export const SHARING = {
   notConnectedBody: "Send an invite whenever you're ready.",
   toggleNote:
     "Turn a setting off to remove it from Ammar's view. Your original check-ins stay in your own space.",
-  visibleNow: "What Ammar can see right now",
+  visibleNow: "Cycle overview",
   visibleNowBody: "This is the full shared view.",
   nothingShared: "Nothing shared right now.",
   historyTitle: "History",
@@ -181,7 +182,7 @@ export const ONBOARDING = {
   nameBody: "This is the name you'll see on your home screen.",
   nameLabel: "Preferred name",
   birthLabel: "Date of birth",
-  birthHint: "Optional. Never shared with Ammar.",
+  birthHint: "Optional.",
   cycleTitle: "What's your cycle usually like?",
   cycleBody: "A rough guess is fine. Aivé learns from your logs.",
   cycleLengthLabel: "Average cycle length",
@@ -208,8 +209,8 @@ export const SETTINGS = {
   editProfileBody: "Your name and cycle settings",
   reminders: "Reminders",
   remindersBody: "A gentle nudge, on your terms",
-  sharing: "What Ammar sees",
-  sharingBody: "Choose what to share",
+  sharing: "Us",
+  sharingBody: "Notes and support for the two of you",
   privacySection: "Privacy and data",
   privacySettings: "Privacy settings",
   privacySettingsBody: "Private mode, notifications, and your data",
@@ -230,7 +231,7 @@ export const SETTINGS = {
   cycleSaved: "Cycle settings updated.",
   connection: "Connection",
   partnerNote:
-    "Aivel chooses what to share and can change it anytime. She can also disconnect your shared view.",
+    "Your space includes Aivel’s full cycle history and daily check-ins.",
 };
 export const PRIVACY_SETTINGS = {
   title: "Privacy",
